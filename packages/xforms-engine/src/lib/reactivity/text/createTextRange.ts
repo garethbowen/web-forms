@@ -52,11 +52,23 @@ const createTextChunks = (
 						const formAttribute = itextForm.getAttributeValue('form');
 
 						if (!formAttribute) {
+							console.log('itextform', itextForm);
+							itextForm.children.forEach((child) => {
+								if (child.getAttributeNode) {
+									const val = child.getAttributeNode('value'); // WHOA
+									if (val && val.value && child.children && child.children.length === 0) {
+										// createComputedExpression(context, chunkExpression)();
+										const res = context.evaluator.evaluateString(val.value);
+										console.log('RRRRRRRRRRRRRRRRRRRRRRRRRES', {res});
+										child.value = res;
+									}
+								}
+							});
+
 							const defaultFormValue = itextForm.getXPathValue();
 							chunks.push(new TextChunk(context, chunkExpression.source, defaultFormValue));
 						} else if (['image', 'video', 'audio'].includes(formAttribute)) {
 							const formValue = itextForm.getXPathValue();
-
 							if (JRResourceURL.isJRResourceReference(formValue)) {
 								mediaSources[formAttribute as keyof MediaSources] = JRResourceURL.from(formValue);
 							}
@@ -89,8 +101,8 @@ export const createTextRange = <Role extends TextRole>(
 		const textChunks = createTextChunks(context, definition.chunks);
 
 		return createMemo(() => {
-			const chunks = textChunks();
-			return new TextRange('form', role, chunks.chunks, chunks.mediaSources);
+			const { chunks, mediaSources } = textChunks();
+			return new TextRange('form', role, chunks, mediaSources);
 		});
 	});
 };

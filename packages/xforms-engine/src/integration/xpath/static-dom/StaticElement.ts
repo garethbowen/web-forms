@@ -128,6 +128,8 @@ const buildStaticElementChildren = (
 	}
 
 	for (const item of childOptions) {
+
+		// TODO is it better to do it here?!
 		switch (typeof item) {
 			case 'string':
 				children.push(new StaticText(parent, item));
@@ -135,7 +137,6 @@ const buildStaticElementChildren = (
 
 			case 'object': {
 				const childElement = new StaticElement(parent, item);
-
 				children.push(childElement);
 				childElements.push(childElement);
 
@@ -246,13 +247,13 @@ export class StaticElement extends StaticParentNode<'element'> implements XForms
 
 	// XFormsXPathElement
 	getXPathValue(): string {
-		const { computedValue } = this;
+		let result;
 
-		if (computedValue != null) {
-			return computedValue;
+		if (this.children.length === 0 && this.value) {
+			result = this.value;
+		} else {
+			result = this.children.map((child) => child.getXPathValue()).join('');
 		}
-
-		const result = this.children.map((child) => child.getXPathValue()).join('');
 
 		this.computedValue = result;
 
