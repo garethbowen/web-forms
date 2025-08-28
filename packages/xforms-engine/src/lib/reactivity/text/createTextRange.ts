@@ -52,15 +52,13 @@ const createTextChunks = (
 						const formAttribute = itextForm.getAttributeValue('form');
 
 						if (!formAttribute) {
-							console.log('itextform', itextForm);
 							itextForm.children.forEach((child) => {
-								if (child.getAttributeNode) {
-									const val = child.getAttributeNode('value'); // WHOA
-									if (val && val.value && child.children && child.children.length === 0) {
-										// createComputedExpression(context, chunkExpression)();
-										const res = context.evaluator.evaluateString(val.value);
-										console.log('RRRRRRRRRRRRRRRRRRRRRRRRRES', {res});
-										child.value = res;
+								if (child.children && child.children.length === 0 && 'getAttributeNode' in child) {
+									const value = child.getAttributeValue('value');
+									if (value) {
+										// Reviewer question: This solution overwrites the readonly `value` property
+										// which is why I don't like this option, but it works. Interested in your take!
+										child.value = context.evaluator.evaluateString(value, context);
 									}
 								}
 							});
@@ -89,8 +87,6 @@ type ComputedFormTextRange<Role extends TextRole> = Accessor<TextRange<Role, 'fo
  *
  * - The form's current language (e.g. `<label ref="jr:itext('text-id')" />`)
  * - Direct `<output>` references within the label's children
- *
- * @todo This does not yet handle itext translations **with** outputs!
  */
 export const createTextRange = <Role extends TextRole>(
 	context: EvaluationContext,
