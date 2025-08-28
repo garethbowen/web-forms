@@ -128,8 +128,6 @@ const buildStaticElementChildren = (
 	}
 
 	for (const item of childOptions) {
-
-		// TODO is it better to do it here?!
 		switch (typeof item) {
 			case 'string':
 				children.push(new StaticText(parent, item));
@@ -156,8 +154,6 @@ const buildStaticElementChildren = (
 };
 
 export class StaticElement extends StaticParentNode<'element'> implements XFormsXPathElement {
-	private computedValue: string | null;
-
 	readonly rootDocument: StaticDocument;
 	readonly root: StaticElement;
 	readonly qualifiedName: QualifiedName;
@@ -202,7 +198,6 @@ export class StaticElement extends StaticParentNode<'element'> implements XForms
 
 		this.children = children;
 		this.childElements = childElements;
-		this.computedValue = leafValue;
 		this.value = leafValue;
 	}
 
@@ -246,18 +241,13 @@ export class StaticElement extends StaticParentNode<'element'> implements XForms
 	}
 
 	// XFormsXPathElement
+	// REVIEWER: This used to cache the computedValue, but we can't do that any more
+	// because we patch the value later on. Feels wrong...
 	getXPathValue(): string {
-		let result;
-
 		if (this.children.length === 0 && this.value) {
-			result = this.value;
-		} else {
-			result = this.children.map((child) => child.getXPathValue()).join('');
+			return this.value;
 		}
-
-		this.computedValue = result;
-
-		return result;
+		return this.children.map((child) => child.getXPathValue()).join('');
 	}
 }
 
