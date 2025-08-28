@@ -123,6 +123,23 @@ export class Evaluator<T extends XPathNode> {
 		const evaluationContext = this.getEvaluationContext(contextNode, namespaceResolver);
 		const results = expr.evaluate(evaluationContext);
 
+		if (results.nodes) {
+			results.nodes.forEach(node => {
+				if ('children' in node && Array.isArray(node.children)) {
+					node.children.forEach((child) => {
+						if (child.nodeType === 'static-element') {
+							child.attributes.forEach((attr: any) => {
+								if ('value' in attr && attr.value) {
+									child.value = this.evaluate(attr.value, contextNode, namespaceResolver, XPATH_EVALUATION_RESULT.STRING_TYPE).stringValue;
+								}
+							});
+						}
+					});
+				}
+
+			});
+		}
+
 		return toXPathEvaluationResult(
 			this.domProvider,
 			resultType ?? XPATH_EVALUATION_RESULT.ANY_TYPE,

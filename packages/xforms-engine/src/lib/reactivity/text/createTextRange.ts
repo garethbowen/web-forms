@@ -77,8 +77,6 @@ type ComputedFormTextRange<Role extends TextRole> = Accessor<TextRange<Role, 'fo
  *
  * - The form's current language (e.g. `<label ref="jr:itext('text-id')" />`)
  * - Direct `<output>` references within the label's children
- *
- * @todo This does not yet handle itext translations **with** outputs!
  */
 export const createTextRange = <Role extends TextRole>(
 	context: EvaluationContext,
