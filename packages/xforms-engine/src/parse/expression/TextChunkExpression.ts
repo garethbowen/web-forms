@@ -14,7 +14,7 @@ const isOutputElement = (element: Element): element is OutputElement => {
 	return element.localName === 'output' && element.hasAttribute('value');
 };
 
-export class TextChunkExpression<T extends 'nodes' | 'string'> extends DependentExpression<T> {
+export class TextChunkExpression<T extends 'nodes' | 'string'> extends DependentExpression<T> { // remove "nodes" type option
 	readonly source: TextChunkSource;
 	// Set for the literal source, blank otherwise
 	readonly stringValue: string;
@@ -63,7 +63,7 @@ export class TextChunkExpression<T extends 'nodes' | 'string'> extends Dependent
 		return new TextChunkExpression(context, 'string', element.getAttribute('value'), 'output');
 	}
 
-	static fromTranslation(
+	static fromTranslation( // TODO remove??
 		context: AnyTextRangeDefinition,
 		maybeExpression: string
 	): TextChunkExpression<'nodes'> | null {

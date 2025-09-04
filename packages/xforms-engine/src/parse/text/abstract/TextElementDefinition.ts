@@ -37,7 +37,7 @@ export abstract class TextElementDefinition<
 				return [];
 			});
 		} else {
-			const expression = TextChunkExpression.fromTranslation(context, refExpression);
+			const expression = TextChunkExpression.fromTranslation(context, refExpression); // todo update this one too
 			if (expression != null) {
 				this.chunks = [expression];
 			} else {
