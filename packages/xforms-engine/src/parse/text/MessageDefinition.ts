@@ -22,7 +22,19 @@ export class MessageDefinition<
 		return new this(bind, type, message);
 	}
 
-	readonly chunks: ReadonlyArray<TextChunkExpression<'nodes' | 'string'>>;
+	override chunks: readonly TextChunkExpression<'string' | 'nodes'>[] = []; // TODO change parent to only expose getter, then remove this
+
+	readonly translationChunks: Map<string, ReadonlyArray<TextChunkExpression<'nodes' | 'string'>>> = new Map();
+
+	override getChunks(language: string): ReadonlyArray<TextChunkExpression<'nodes' | 'string'>> {
+		if (this.translationChunks.has(language)) {
+			return this.translationChunks.get(language)!;
+		}
+		if (this.translationChunks.has('default')) {
+			return this.translationChunks.get('default')!;
+		}
+		return this.translationChunks.size > 0 ? this.translationChunks.values().next().value! : [];
+	}
 
 	private constructor(
 		bind: BindDefinition,
@@ -32,40 +44,34 @@ export class MessageDefinition<
 		super(bind.form, bind, null);
 
 		if (isTranslationExpression(message)) {
-			// TODO find a better way to get default language
+			this.isTranslated = true;
+
+			const messageId = /jr:itext\(['"](.*)['"]\)/.exec(message)?.[1]!; // TODO it must match because of isTranslationExpression
 
 
-			const itextTranslationElement = this.form.xformDOM.itextTranslationElements.find((itext) => {
-				return itext.attributes.getNamedItem('lang')?.value === 'default'; // TODO get actual language
-			});
-			if (!itextTranslationElement) { // shouldn't happen
-				this.chunks = [];
-				return;
-			}
+			this.form.xformDOM.itextTranslationElements.forEach((itextTranslationElement) => {
+				const lang = itextTranslationElement.attributes.getNamedItem('lang')?.value ?? 'default';
 
-			this._isTranslated = true;
+				const name = itextTranslationElement.children.namedItem(messageId);
+				const chunks: TextChunkExpression<'nodes' | 'string'>[] = [];
+				for (const val of name?.childNodes!) {
+					for (const child of val.childNodes)	{
+						if (isElementNode(child)) {
+							const output = TextChunkExpression.fromOutput(this, child);
+							if (output) {
+								chunks.push(output);
+							}
+						}
 
-			const messageId = /jr:itext\(['"](.*)['"]\)/.exec(message)?.[1];
-
-			const name = itextTranslationElement.children.namedItem(messageId!);
-			const chunky: TextChunkExpression<'nodes' | 'string'>[] = [];
-			for (const val of name?.childNodes!) {
-				for (const child of val.childNodes)	{
-					if (isElementNode(child)) {
-						const output = TextChunkExpression.fromOutput(this, child);
-						if (output) {
-							chunky.push(output);
+						if (isTextNode(child)) {
+							chunks.push(TextChunkExpression.fromLiteral(this, child.data));
 						}
 					}
-
-					if (isTextNode(child)) {
-						chunky.push(TextChunkExpression.fromLiteral(this, child.data));
-					}
 				}
-			}
-			this.chunks = chunky;
+				this.translationChunks.set(lang, chunks);
+			});
 		} else {
-			this.chunks = [TextChunkExpression.fromLiteral(this, message)];
+			this.translationChunks.set('default', [TextChunkExpression.fromLiteral(this, message)]);
 		}
 	}
 }

@@ -25,13 +25,15 @@ interface ChunksAndMedia {
  * @param chunkExpressions - Array of text source expressions to process.
  * @returns An accessor for an object with all chunks and the first image (if any).
  */
-const createTextChunks = (
+const createTextChunks = <Role extends TextRole>(
 	context: EvaluationContext,
-	chunkExpressions: ReadonlyArray<TextChunkExpression<'nodes' | 'string'>>
+	definition: TextRangeDefinition<Role>
 ): Accessor<ChunksAndMedia> => {
 	return createMemo(() => {
 		const chunks: TextChunk[] = [];
 		const mediaSources: MediaSources = {};
+
+		const chunkExpressions: ReadonlyArray<TextChunkExpression<'nodes' | 'string'>> = definition.getChunks(context.getActiveLanguage().language);
 
 		chunkExpressions.forEach((chunkExpression) => {
 			if (chunkExpression.source === 'literal') {
@@ -86,9 +88,13 @@ export const createTextRange = <Role extends TextRole>(
 	definition: TextRangeDefinition<Role>
 ): ComputedFormTextRange<Role> => {
 	return context.scope.runTask(() => {
-		const textChunks = createTextChunks(context, definition.chunks);
+		const textChunks = createTextChunks(context, definition);
 
 		return createMemo(() => {
+			if (definition.isTranslated) {
+				// make this as reactive to the active language
+				context.getActiveLanguage();
+			}
 			const chunks = textChunks();
 			return new TextRange('form', role, chunks.chunks, chunks.mediaSources);
 		});

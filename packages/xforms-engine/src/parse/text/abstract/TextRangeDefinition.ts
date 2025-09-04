@@ -26,6 +26,10 @@ export abstract class TextRangeDefinition<Role extends TextRole> extends Depende
 
 	abstract readonly chunks: ReadonlyArray<TextChunkExpression<'nodes' | 'string'>>;
 
+	getChunks(language: string): ReadonlyArray<TextChunkExpression<'nodes' | 'string'>> {
+		return this.chunks;
+	}
+
 	override get isTranslated(): boolean {
 		return (
 			this.ownerContext.isTranslated || this.chunks.some((chunk) => chunk.source === 'translation')
