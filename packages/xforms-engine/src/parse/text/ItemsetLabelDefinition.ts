@@ -3,7 +3,6 @@ import { getLabelElement } from '../../lib/dom/query.ts';
 import type { XFormDefinition } from '../../parse/XFormDefinition.ts';
 import type { ItemsetDefinition } from '../body/control/ItemsetDefinition.ts';
 import { TextChunkExpression } from '../expression/TextChunkExpression.ts';
-import { isTranslationExpression } from '../xpath/semantic-analysis.ts';
 import { TextRangeDefinition } from './abstract/TextRangeDefinition.ts';
 
 interface LabelElement extends LocalNamedElement<'label'> {}
@@ -48,8 +47,8 @@ export class ItemsetLabelDefinition extends TextRangeDefinition<'item-label'> {
 			throw new Error('<itemset><label> missing ref attribute');
 		}
 
+		/*
 		if (isTranslationExpression(refExpression)) {
-/*
 			this.form.xformDOM.secondaryInstanceElements.forEach((instanceElement) => {
 				if (instanceElement.getAttribute('id') === 'animals') { // TODO get id from itemset @nodeset
 					const root = instanceElement.childNodes[1];
