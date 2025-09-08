@@ -52,6 +52,7 @@ export class SelectControlDefinition<Type extends SelectType> extends ControlDef
 		const itemsetElement = getItemsetElement(element);
 		const itemElements = getItemElements(element);
 
+		// TODO can we remove the ItemsetDefinition and instead convert it into a list of ItemDefinitions here?
 		if (itemsetElement == null) {
 			this.itemset = null;
 			this.items = itemElements.map((itemElement) => {

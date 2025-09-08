@@ -32,12 +32,16 @@ const createTextChunks = <Role extends TextRole>(
 	return createMemo(() => {
 		const chunks: TextChunk[] = [];
 		const mediaSources: MediaSources = {};
-
 		const chunkExpressions: ReadonlyArray<TextChunkExpression<'nodes' | 'string'>> = definition.getChunks(context.getActiveLanguage().language);
 
 		chunkExpressions.forEach((chunkExpression) => {
 			if (chunkExpression.source === 'literal') {
 				chunks.push(new TextChunk(context, chunkExpression.source, chunkExpression.stringValue));
+				return;
+			}
+
+			if (chunkExpression.source === 'image') {
+				mediaSources['image'] = JRResourceURL.from(chunkExpression.stringValue);
 				return;
 			}
 
@@ -49,6 +53,7 @@ const createTextChunks = <Role extends TextRole>(
 				return;
 			} else {
 				// translation expression evaluates to an entire itext block, process forms separately
+				// TODO this will be processed in parse, not reactively??
 				computed.forEach((itextForm) => {
 					if (isEngineXPathElement(itextForm) && itextForm instanceof StaticElement) {
 						const formAttribute = itextForm.getAttributeValue('form');
